@@ -3,7 +3,7 @@
 learning 验证了这类矩阵反映了一些线性变换DFT，DCT，……，1DConv的结构。
 Kaleidoscope的结论是反映在算法电路中深度不深的矩阵都属于这种矩阵，
 
-10.10 
+10.10
 
 在尝试链接 vscode 到机器上的时候出现了一些链接上的问题，
 
@@ -30,5 +30,18 @@ yuzy_torch1.10.1_py38_
 
 luoxin_py3.8_pytorch1.10.1_cu11.3_devel_lighnting_hydra_mmcv_wandb_timm_v2
 
+bit:5000/nvidia-cuda11.3.1-cudnn8-devel-ubuntu20.04
+
 该镜像，可能可以使用。
 
+
+--network host
+    --build-arg HTTP_PROXY=http://192.168.16.5:3128
+    --build-arg HTTPS_PROXY=http://192.168.16.5:3128
+
+scp -P 39099 file_name yuzy@202.38.69.241:~/dockertmp/
+
+https://www.jianshu.com/p/9a4d1b4db99a
+https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-2.2.0/en_core_web_sm-2.2.0.tar.gz
+
+yuzy_torch1.10.1_py38_cu11.3_fly
