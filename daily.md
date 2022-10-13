@@ -24,11 +24,14 @@ https://linuxconfig.org/how-to-switch-between-multiple-gcc-and-g-compiler-versio
 
 ubuntu 里还是有 cuda 相关的问题，我尝试回到本机和集群上 build 镜像。
 
-yuzy_torch1.10.1_py38_
+docker build -t yuzy_torch1.10.1_py38_cu11.3_fly . 
+
+yuzy_torch1.10.1_py38_cu11.3_fly
 
 我注意到集群上有
 
 luoxin_py3.8_pytorch1.10.1_cu11.3_devel_lighnting_hydra_mmcv_wandb_timm_v2
 
 该镜像，可能可以使用。
+
 
