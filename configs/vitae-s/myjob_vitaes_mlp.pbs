@@ -1,0 +1,16 @@
+#PBS    -N  test_mlp_mixer_fbb_0
+#PBS    -o  /ghome/yuzy/$PBS_JOBID.out
+#PBS    -e  /ghome/yuzy/$PBS_JOBID.err
+#PBS    -l nodes=1:gpus=1:s
+#PBS    -r y
+#PBS    -m abef
+cd $PBS_O_WORKDIR
+echo Time is `date`
+echo Directory is $PWD
+echo This job runs on following nodes:
+echo -n "Node:"
+cat $PBS_NODEFILE
+echo -n "Gpus:"
+cat $PBS_GPUFILE
+echo "CUDA_VISIBLE_DEVICES:"$CUDA_VISIBLE_DEVICES
+startdocker -u "--ipc=host -it" -D /gpub/imagenet_raw -s /ghome/yuzy/my_vitaes_mlp.sh bit:5000/yuzy_torch1.10.1_py38_cu11.3_fly 

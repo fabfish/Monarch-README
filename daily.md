@@ -129,7 +129,15 @@ sed -i 's/batch_size_eval: ${eval:${.batch_size} * 2}/# batch_size_eval: ${eval:
 
 ```bash
 
-startdocker -u "-it" -D /gpub/imagenet_raw -c /bin/bash bit:5000/yuzy_torch1.10.1_py38_cu11.3_fly
+echo $CUDA_VISIBLE_DEVICES
+
+nvidia-smi
+
+export CUDA_VISIBLE_DEVICES="0,1,..."
+
+!!!!!!!只能在G101改
+
+startdocker -u "-it --ipc=host" -D /gpub/imagenet_raw -c /bin/zsh bit:5000/yuzy_torch1.10.1_py38_cu11.3_fly
 
 zsh 2
 
@@ -165,10 +173,10 @@ python validate.py /gpub/imagenet_raw --model ViTAE_basic_Tiny --eval_checkpoint
 
 /ghome/yuzy/ViTAE-Transformer/Image-Classification/vitae/checkpoints
 
-
 vit-fly 结构的研究：
 
 vit 中，transformer 的各个 block 包含 attention 和 mlp 层，都可以用指定的 butterfly 层替代。
+
 可用的 butterfly sparse 有
 
 lowrank+sparse 有用，但涉及到改动 attention 的结构，和 monarch 和 flashattention 不一样，所以目前先跑后面两个。cuda 非常重要。
@@ -176,3 +184,95 @@ lowrank+sparse 有用，但涉及到改动 attention 的结构，和 monarch 和
 现在分布式这一块属于基础、硬核的工作
 
 先说结果，再展示过程。
+
+HYDRA_FULL_ERROR=1 python run.py experiment=imagenet/vit/vit-s-butterflyblockdiag-mlp datamodule.data_dir=/gpub/imagenet_raw
+
+昨天没跑通 sanity check 是因为没加 --ipc==host 导致内存不够，目前设置多卡还有问题，以及不清楚是否需要另外更改 monarch 的配置。
+
+[yuzy@gwork ~]$ qsub myjob_vit_normal.pbs
+380963.Ghead
+[yuzy@gwork ~]$ qsub myjob_vit_monarch.pbs
+380964.Ghead
+
+10.16 
+
+今天任务是把 monarch 配置到 vitae 上，首先需要把 vitae 配好，
+
+考虑到之前运行出现问题，打算重建算法库，删除之前修改过的文件。
+
+timm 0.4.12
+
+```bash
+
+startdocker -u "--ipc=host -it" -D /gpub/imagenet_raw -c /bin/zsh bit:5000/yuzy_torch1.10.1_py38_cu11.3_fly
+
+cd /ghome/yuzy
+
+pip install 
+
+python validate.py /gpub/imagenet_raw --model ViTAE_basic_Tiny --eval_checkpoint ./checkpoints
+
+```
+
+vitae 中的问题：
+1. dataset 无法 import
+cannot import name 'Dataset' from 'timm.data'
+2. 无 real_json
+在 https://github.com/google-research/reassessed-imagenet 下载一个
+3. 
+checkpoints:
+
+python validate.py /gpub/imagenet_raw --model ViTAE_basic_Tiny --eval_checkpoint ./checkpoints/ViTAE-T.pth.tar
+
+切换到timm 0.4.12，validate可以正常工作
+
+python -m torch.distributed.launch --nproc_per_node=1 main.py /gpub/imagenet_raw --model ViTAE_basic_Tiny -b 128 --lr 1e-3 --weight-decay .03 --img-size 224 --amp
+
+python -m torch.distributed.launch --nproc_per_node=1 main.py /gpub/imagenet_raw --model ViTAE_basic_Tiny -b 128 --lr 1e-3 --weight-decay .03 --img-size 224 --amp
+
+把节点数量换成 1，可以跑通。可能 timm 0.4.12 也可以适合 fly 的库，但 fly 的代码我改了一下。
+
+monarch: in 256, out 512, nblocks=4, in blocks=64, out blocks=128
+
+blkdiag1 torch.Size([4, 64, 64]) n, insize, insize
+blkdiag2 torch.Size([4, 128, 64])n, outsize,insize
+
+normcell input: [64,196,256]
+norm2 [64,196,256]
+
+mlp is MonarchMlp(in_features=dim, hidden_features=mlp_hidden_dim, act_layer=act_layer, drop=drop)
+
+MonarchMlp(infeature = 256, hidden_features = 512)
+
+
+Monarch forwarding, x shape is  torch.Size([128, 197, 768])
+Monarch forwarding, x shape is  torch.Size([128, 197, 2304])
+
+python main.py /gpub/imagenet_raw --model ViTAE_basic_Small -b 128 --lr 1e-3 --weight-decay .03 --img-size 224 --amp
+
+Train: 0 [   0/10009 (  0%)]  Loss:  6.926911 (6.9269)  Time: 23.170s,    5.52/s  (23.170s,    5.52/s)  LR: 1.000e-06  Data: 8.405 (8.405)
+Train: 0 [  50/10009 (  0%)]  Loss:  6.927876 (6.9180)  Time: 1.462s,   87.53/s  (1.896s,   67.51/s)  LR: 1.000e-06  Data: 0.026 (0.199)
+Train: 0 [ 100/10009 (  1%)]  Loss:  6.911202 (6.9174)  Time: 1.413s,   90.60/s  (1.647s,   77.73/s)  LR: 1.000e-06  Data: 0.027 (0.112)
+
+Train: 0 [   0/10009 (  0%)]  Loss:  6.917073 (6.9171)  Time: 24.811s,    5.16/s  (24.811s,    5.16/s)  LR: 1.000e-06  Data: 5.169 (5.169)
+Train: 0 [  50/10009 (  0%)]  Loss:  6.920621 (6.9153)  Time: 1.435s,   89.20/s  (1.985s,   64.48/s)  LR: 1.000e-06  Data: 0.016 (0.142)
+Train: 0 [ 100/10009 (  1%)]  Loss:  6.906080 (6.9162)  Time: 1.439s,   88.93/s  (1.717s,   74.56/s)  LR: 1.000e-06  Data: 0.016 (0.079)
+
+
+沈老师好，我刚刚调好了一个仅替换 NormalCell 中 mlp 的 vitae-monarch，
+对于 Vitae-basic-Tiny 模型，
+可训练的参数可以从 4882792（mlp）减少到 3735912（monarch），
+但训练速度和准确度现在排不上队，暂时不知道结果，
+训练 100 个 epoch 时，粗略的速度是（1080 卡，batch size 128，imagenet size=224，lr 0.001）
+batch_time 1.647s, rate 77.73/s （mlp）
+batch_time 1.717s, rate 74.56/s （monarch）
+速度基本接近，理想状况应该是准确度差不多，速度提升，我考虑这个速度可能是刚开始训练，或者模型很小导致的
+
+[yuzy@gwork ~]$ qsub my_vitaes_mlp.sh
+381128.Ghead
+[yuzy@gwork ~]$ qsub my_vitaes_monarch.sh
+381129.Ghead
+
+
+
+
