@@ -280,3 +280,15 @@ batch_time 1.717s, rate 74.56/s （monarch）
 381286.Ghead
 [yuzy@gwork ~]$ qsub myjob_vitaes_mlp.pbs
 381287.Ghead
+
+
+3090
+[yuzy@gwork ~]$ qsub myjob_vitaes_monarch.pbs
+381500.Ghead
+[yuzy@gwork ~]$ qsub myjob_vitaes_mlp.pbs
+381501.Ghead
+3080Ti
+[yuzy@gwork ~]$ qsub myjob_vitaes_monarch.pbs
+381503.Ghead
+[yuzy@gwork ~]$ qsub myjob_vitaes_mlp.pbs
+381504.Ghead
