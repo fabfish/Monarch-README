@@ -273,6 +273,82 @@ batch_time 1.717s, rate 74.56/s （monarch）
 [yuzy@gwork ~]$ qsub my_vitaes_monarch.sh
 381129.Ghead
 
+10.17
+
+ssh yuzhiyuan11@jdea-cq-jump.jd.com -p 80
+
+conda install pytorch torchvision torchaudio cudatoolkit=11.3 -c pytorch
+
+docker run -it -v /public/data0/DATA-1/users/yuzhiyuan11:/workspace --name yuzhiyuan11 hpcaitech/cuda-conda:11.3 /bin/bash
+
+ssh jdops1003@172.17.226.143
+
+cd /public/data0/DATA-1/users/yuzhiyuan1
+
+docker run -it -v /public/data0/DATA-1/users/yuzhiyuan11:/workspace --name yuzhiyuan11 hpcaitech/cuda-conda:11.3 /bin/bash
+
+docker exec -it yuzhiyuan11 /bin/bash
+
+10.19
+
+网络问题，目前先暂时采用 --network=host 的方式，之后再考虑更安全的修改（改网络之类的
+
+对于报错：ATen/cuda/CUDAGraphsUtils.cuh: No such file or directory
+
+先按正常方式安装 pytorch
+
+cutlass/cutlass.h: No such file or directory
+
+在 src 下找到 cutlass 路径，删掉该文件夹，替换为 git clone cutluss
+
+cuda 报错
+RuntimeError: CUDA out of memory. 
+Tried to allocate 2.00 GiB 
+(GPU 0; 39.59 GiB total capacity; 
+13.50 GiB already allocated; 
+1.76 GiB free; 
+15.63 GiB reserved in total by PyTorch) 
+If reserved memory is >> allocated memory 
+try setting max_split_size_mb to avoiement and PYTORCH_CUDA_ALLOC_CONF
+
+出现这个问题可能是因为现在有比较大的实验在跑，
+
+export PYTORCH_CUDA_ALLOC_CONF=max_split_size_mb:128
+
+[root@DGX-107 flash-attention]# PYTHONPATH=$PWD python benchmarks/benchmark_flash_attention.py
+FlashAttention - Forward pass
+<torch.utils.benchmark.utils.common.Measurement object at 0x7f996dd76ee0>
+fn(*inputs, **kwinputs)
+  4.52 ms
+  1 measurement, 30 runs , 128 threads
+FlashAttention - Backward pass
+<torch.utils.benchmark.utils.common.Measurement object at 0x7f996dd765b0>
+y.backward(grad, retain_graph=True)
+  9.11 ms
+  1 measurement, 30 runs , 128 threads
+FlashAttention - Forward + Backward pass
+<torch.utils.benchmark.utils.common.Measurement object at 0x7f996dd76fa0>
+f(grad, *inputs, **kwinputs)
+  12.98 ms
+  1 measurement, 30 runs , 128 threads
+PyTorch Standard Attention - Forward pass
+<torch.utils.benchmark.utils.common.Measurement object at 0x7f996dd76760>
+fn(*inputs, **kwinputs)
+  19.25 ms
+  1 measurement, 30 runs , 128 threads
+PyTorch Standard Attention - Backward pass
+<torch.utils.benchmark.utils.common.Measurement object at 0x7f996dd76730>
+y.backward(grad, retain_graph=True)
+  47.09 ms
+  1 measurement, 30 runs , 128 threads
+PyTorch Standard Attention - Forward + Backward pass
+<torch.utils.benchmark.utils.common.Measurement object at 0x7f996dd768b0>
+f(grad, *inputs, **kwinputs)
+  67.52 ms
+  1 measurement, 30 runs , 128 threads
 
 
-
+ms        flash_attn  pytorch
+Forward   4.52        19.25    
+Backward  9.11        47.09
+F+B       12.98       67.52
