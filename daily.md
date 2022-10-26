@@ -362,3 +362,6 @@ conv 层的加速
 
 
 机器学习，cuda
+
+docker run -idt --name ubuntu-cuda-113 --gpus all --shm-size 128g -v /public/data0/DATA-1/users/chenshixiang6:/workdir --dns 114.114.114.114 --dns 8.8.8.8 --dns 114.114.114.114 --dns 8.8.8.8 nvidia/cuda:11.3.0-devel-ubuntu16.04
+
