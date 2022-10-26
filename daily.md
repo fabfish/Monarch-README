@@ -179,6 +179,8 @@ vit 中，transformer 的各个 block 包含 attention 和 mlp 层，都可以�
 
 可用的 butterfly sparse 有
 
+讨论：
+
 lowrank+sparse 有用，但涉及到改动 attention 的结构，和 monarch 和 flashattention 不一样，所以目前先跑后面两个。cuda 非常重要。
 
 现在分布式这一块属于基础、硬核的工作
@@ -248,7 +250,8 @@ MonarchMlp(infeature = 256, hidden_features = 512)
 Monarch forwarding, x shape is  torch.Size([128, 197, 768])
 Monarch forwarding, x shape is  torch.Size([128, 197, 2304])
 
-python main.py /gpub/imagenet_raw --model ViTAE_basic_Small -b 128 --lr 1e-3 --weight-decay .03 --img-size 224 --amp
+
+
 
 Train: 0 [   0/10009 (  0%)]  Loss:  6.926911 (6.9269)  Time: 23.170s,    5.52/s  (23.170s,    5.52/s)  LR: 1.000e-06  Data: 8.405 (8.405)
 Train: 0 [  50/10009 (  0%)]  Loss:  6.927876 (6.9180)  Time: 1.462s,   87.53/s  (1.896s,   67.51/s)  LR: 1.000e-06  Data: 0.026 (0.199)
@@ -352,3 +355,11 @@ ms        flash_attn  pytorch
 Forward   4.52        19.25    
 Backward  9.11        47.09
 F+B       12.98       67.52
+
+10.22
+
+conv 层的加速
+
+把训练结果整理一下
+
+机器学习，cuda
