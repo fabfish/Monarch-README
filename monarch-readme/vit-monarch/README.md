@@ -14,7 +14,7 @@ Pixelated Butterfly: Simple and Efficient Sparse training for Neural Network Mod
 
 ## 下载仓库
 
-由于代码运行使用 wandb 作为 logger，在运行时会调用 git 验证仓库的 ownership，因此推荐 fork 一份作者的代码。正好为了运行我们的实验，原 fly 仓库代码有几处需要修改，我们可以在这时将其修改，需要修改的地方是：
+由于代码运行使用 wandb 作为 logger，在运行时会调用 git 验证仓库的 ownership，因此目前个人找到的最好的办法是 fork 一份作者的代码（https://github.com/HazyResearch/fly）。正好为了运行我们的实验，原 fly 仓库代码有几处需要修改，我们可以在这时将其修改，需要修改的地方是：
 
 - ImageNet 处理中有一处会报缺少参数错误（原因可能是某个库如 lightning 版本更新了，导致参数变化）。
 - Hydra logger 配置会因冲突无法复制 run.py 文件，导致不能正常运行训练。
@@ -22,7 +22,7 @@ Pixelated Butterfly: Simple and Efficient Sparse training for Neural Network Mod
 
 修改方法如下：
 
-在 GitHub 上 fork 作者的代码后，找到 fly/src/datamodules/imagenet.py，做以下修改：
+在 GitHub 上 fork 作者的代码（页面右上角）后，找到 /fly/src/datamodules/imagenet.py，做以下修改：
 
 在第 38 行的 \_\_init\_\_ 函数中，在 self 后另起新行，向 args 添加 
 
@@ -46,7 +46,7 @@ Pixelated Butterfly: Simple and Efficient Sparse training for Neural Network Mod
   devices: 1
 ```
 
-然后进入工作目录，使用 git clone 下载仓库。测试时（10 月 26 日） d107 网络有点波动，可能网络不太好，需要等一会儿。如果卡住可以重试几次。
+然后进入工作目录，使用 git clone 下载仓库。测试时（10 月 26 日） dgx-107 网络有点波动，可能网络不太好，需要等一会儿。如果卡住可以重试几次。
 
 ```bash
 git clone https://github.com/yourid/fly
@@ -71,7 +71,7 @@ docker attach monarch-test
 
 首先下载 checkpoints（速度可能比较慢），然后进行实验，代码在下面给出。
 
-如果下载很慢，可以使用 cp 命令复制 yuzhiyuan11 目录下的文件，绝对路径位于 /public/data0/DATA-1/users/yuzhiyuan11/fly/checkpoints/t2tvit/81.7_T2T_ViTt_14.pth.tar.og
+如果下载很慢，可以 mkdir -p checkpoints/t2tvit 后使用 cp 命令复制 yuzhiyuan11 目录下的文件，绝对路径位于 /public/data0/DATA-1/users/yuzhiyuan11/fly/checkpoints/t2tvit/81.7_T2T_ViTt_14.pth.tar.og
 
 训练中需要配置 wandb 账号。
 
@@ -139,9 +139,6 @@ docker build .
 ```
 
 其中 fast-transformer 的 setup 需要较长时间，可能半个小时。
-
-
-
 
 
 ### 自建镜像（未完成）
