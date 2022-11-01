@@ -139,3 +139,14 @@ plt.plot(epoch_monarch, test_time_y,color='r')
 plt.legend(['ViTAE-monarch','ViTAE-mlp'])
 
 plt.show()
+
+# print(epoch_time_monarch_x)
+# print(epoch_time_mlp_x)
+
+lx = (epoch_time_monarch_x, epoch_time_mlp_x)
+for l in lx:
+    s = 0
+    for i in l:
+        print(i-s)
+        s=i
+    print()
