@@ -365,3 +365,34 @@ conv 层的加速
 
 docker run -idt --name ubuntu-cuda-113 --gpus all --shm-size 128g -v /public/data0/DATA-1/users/chenshixiang6:/workdir --dns 114.114.114.114 --dns 8.8.8.8 --dns 114.114.114.114 --dns 8.8.8.8 nvidia/cuda:11.3.0-devel-ubuntu16.04
 
+目前找到的并不是butterfly block diag, 而只是简单的 block diag bert 的配置文件。
+
+相关的文件分别是：
+configs\
+  experiment\
+    bert\
+      bertlarge-blockdiag-densified.yaml  我们感兴趣的实验，在训练后期将块对角转化为实心矩阵
+      bertlarge.yaml 配置实验，在 model 中选择 bertlarge
+
+  model\
+    bert_mlp_cfg/blockdiag.yaml 设置 bert large 的 bert layer 中的 mlp 为 blockdiag
+    bertmodel\bertlarge.yaml 实验配置
+
+src\
+  models\
+    layers\
+      blockdiag_butterfly_multiply  我们希望使用的 bflym，传入 x 与两个块对角矩阵，通过 einsum 等方式实现乘法
+  ops\
+    blockdiag_multiply.py 实际使用到的 bm，就是将块矩阵填补成实心的
+  utils\
+    checkpoint.py 中有一个 blockdiag to dense mlp bert 函数，就是读 statedict，处理 encoder 中的 bb mlp 层
+
+实验设置是，当 bert large 训练时，用 nblock = 4 块对角矩阵来代替 mlp，进行稀疏训练；然后填补成实心矩阵，进行后半段训练。
+
+通过读 checkpoints，将 diagblock_mlp 读取出来，展开填补成 dense
+
+那么用于 vitae 上，且使用 fly，我们应该做的是：
+
+找到训练函数，重新设置 epoch 为 70%，当训练时，用 monarch linear，先训练 70% epoch
+
+然后新写一个读 checkpoints 的函数，要搜索出改过的 monarch 层，参照 densify 的写法读 statedict，读完之后新写一个 convert 函数来转换，目前的思路是参照 blockdiag_butterfly_multiply_reference 中的 version 3， return out2? 或者就按照定义做乘法，先写一个 test 试试，参照孙研学长的做法
