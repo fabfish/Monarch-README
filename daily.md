@@ -365,3 +365,19 @@ conv 层的加速
 
 docker run -idt --name ubuntu-cuda-113 --gpus all --shm-size 128g -v /public/data0/DATA-1/users/chenshixiang6:/workdir --dns 114.114.114.114 --dns 8.8.8.8 --dns 114.114.114.114 --dns 8.8.8.8 nvidia/cuda:11.3.0-devel-ubuntu16.04
 
+10.29
+
+1. 确定 monarch S2D 的用法，并部署，最迟这两天完成
+
+2. 配置 flash-attention-vit
+
+3. 整理 monarch butterfly 系列的模型细节，写论文要用。
+
+没有找到 monarch S2D 的实现，找到的是 blockdiag (not butterfly)，是否等价于 monarch？（形式上等价）
+
+在 experiment/bert 下，bertlarge-blockdiag-densified，它将会在训练的第二部分调用 warmup，读取 state dict 后，将 checkpoints 里面的
+
+
+
+
+但不是初始化一组权值矩阵（nblock,out_feature/nblock, in_feature/nblock）训练，理论上来讲
