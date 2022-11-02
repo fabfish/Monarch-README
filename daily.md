@@ -411,3 +411,24 @@ src\
 找到训练函数，重新设置 epoch 为 70%，当训练时，用 monarch linear，先训练 70% epoch
 
 然后新写一个读 checkpoints 的函数，要搜索出改过的 monarch 层，参照 densify 的写法读 statedict，读完之后新写一个 convert 函数来转换，目前的思路是参照 blockdiag_butterfly_multiply_reference 中的 version 3， return out2? 或者就按照定义做乘法，先写一个 test 试试，参照孙研学长的做法
+
+11.2
+
+现在，先把 10 月 20 号训好的 checkpoint 读取出来，分别是这两个
+
+回顾时注意，这些代码是在 gdata1 上存储的
+
+ViTAE-Transformer\Image-Classification\output\train\20221019-201710-ViTAE_basic_Small-224
+ViTAE-Transformer\Image-Classification\output\train\20221020-233150-ViTAE_basic_Small-224
+
+startdocker -u "--ipc=host -it" -P /gdata1/yuzy -D /gpub/imagenet_raw -c /bin/zsh bit:5000/yuzy_torch1.10.1_py38_cu11.3_fly
+
+<!-- python mymain.py /workspace/imagenet --model ViTAE_basic_Small -b 128 --lr 1e-3 --weight-decay .03 --img-size 224 --amp -->
+
+下面是 mlp 的
+
+python mymain.py /gpub/imagenet_raw --model ViTAE_basic_Small -b 128 --lr 1e-3 --weight-decay .03 --img-size 224 --amp --resume /gdata1/yuzy/ViTAE-Transformer/Image-Classification/output/train/20221020-233150-ViTAE_basic_Small-224/last.pth.tar
+
+下面是 monarch 的
+
+python mymain.py /gpub/imagenet_raw --model ViTAE_basic_Small -b 128 --lr 1e-3 --weight-decay .03 --img-size 224 --amp --resume /gdata1/yuzy/ViTAE-Transformer/Image-Classification/output/train/20221019-201710-ViTAE_basic_Small-224/last.pth.tar
