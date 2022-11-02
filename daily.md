@@ -378,9 +378,8 @@ docker run -idt --name ubuntu-cuda-113 --gpus all --shm-size 128g -v /public/dat
 在 experiment/bert 下，bertlarge-blockdiag-densified，它将会在训练的第二部分调用 warmup，读取 state dict 后，将 checkpoints 里面的
 
 
-
-
 但不是初始化一组权值矩阵（nblock,out_feature/nblock, in_feature/nblock）训练，理论上来讲
+
 目前找到的并不是butterfly block diag, 而只是简单的 block diag bert 的配置文件。
 
 相关的文件分别是：
@@ -405,22 +404,6 @@ src\
 
 实验设置是，当 bert large 训练时，用 nblock = 4 块对角矩阵来代替 mlp，进行稀疏训练；然后填补成实心矩阵，进行后半段训练。
 
-通过读 checkpoints，将 diagblock_mlp 读取出来，展开填补成 dense
-
-那么用于 vitae 上，且使用 fly，我们应该做的是：
-
-找到训练函数，重新设置 epoch 为 70%，当训练时，用 monarch linear，先训练 70% epoch
-
-然后新写一个读 checkpoints 的函数，要搜索出改过的 monarch 层，参照 densify 的写法读 statedict，读完之后新写一个 convert 函数来转换，目前的思路是参照 blockdiag_butterfly_multiply_reference 中的 version 3， return out2? 或者就按照定义做乘法，先写一个 test 试试，参照孙研学长的做法
-
-没有找到 monarch S2D 的实现，找到的是 blockdiag (not butterfly)，是否等价于 monarch？（形式上等价）
-
-在 experiment/bert 下，bertlarge-blockdiag-densified，它将会在训练的第二部分调用 warmup，读取 state dict 后，将 checkpoints 里面的
-
-
-
-
-但不是初始化一组权值矩阵（nblock,out_feature/nblock, in_feature/nblock）训练，理论上来讲
 通过读 checkpoints，将 diagblock_mlp 读取出来，展开填补成 dense
 
 那么用于 vitae 上，且使用 fly，我们应该做的是：
