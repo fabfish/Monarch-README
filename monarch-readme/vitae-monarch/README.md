@@ -39,7 +39,7 @@ docker 镜像已经在 DGX-107 上准备好，可以直接使用。关于镜像�
 
 ```bash
 # first-time use
-nvidia-docker run -it -v /public/data0/DATA-1/users/yuzhiyuan11:/workspace -v /public/data0/DATA-1/users/mipeng7/datasets/imagenet2012:/workspace/imagenet --name yuzhiyuan11-fly --network=host --dns 114.114.114.114 --dns 8.8.8.8  nvcr.io/nvidia/pytorch:22.06-py3-fly /bin/bash
+nvidia-docker run -it -v /public/data0/DATA-1/users/yuzhiyuan11:/workspace -v /public/data0/DATA-1/users/mipeng7/datasets/imagenet2012:/workspace/imagenet --name yuzhiyuan11-fly --network=host --dns 114.114.114.114 --dns 8.8.8.8 --shm-size 64g nvcr.io/nvidia/pytorch:22.06-py3-fly /bin/bash
 
 # second-time use
 docker restart yuzhiyuan11-fly
@@ -58,7 +58,7 @@ pip install timm==0.4.12
 cd ViTAE-Transformer/Image-Classification/
 
 # test vitae + monarch
-python main.py /workspace/imagenet --model ViTAE_basic_Small -b 128 --lr 1e-3 --weight-decay .03 --img-size 224 --amp
+CUDA_VISIBLE_DEVICES=4,5,6,7 python -m torch.distributed.launch --nproc_per_node=4 main.py /workspace/imagenet --model ViTAE_basic_Small -b 128 --lr 1e-3 --weight-decay .03 --img-size 224 --amp
 
 # to test vitae + mlp, modify ViTAE-Transformer/Image-Classification/vitae/NormalCell.py
 ```
