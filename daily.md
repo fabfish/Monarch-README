@@ -432,3 +432,8 @@ python mymain.py /gpub/imagenet_raw --model ViTAE_basic_Small -b 128 --lr 1e-3 -
 下面是 monarch 的
 
 python mymain.py /gpub/imagenet_raw --model ViTAE_basic_Small -b 128 --lr 1e-3 --weight-decay .03 --img-size 224 --amp --resume /gdata1/yuzy/ViTAE-Transformer/Image-Classification/output/train/20221019-201710-ViTAE_basic_Small-224/last.pth.tar
+
+发现有点问题，对不上
+
+需要先输出这两个给我判断一下，现在已经知道昨天的问题是 checkpoints 是一个字典，statedict 还要在里面，用 checkpoint['statedict'] 来索引
+
